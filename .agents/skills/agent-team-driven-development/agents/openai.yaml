@@ -1,0 +1,5 @@
+interface:
+  display_name: "Agent Team Driven Development"
+  short_description: "Coordinate Codex sub-agents as a delivery team"
+policy:
+  allow_implicit_invocation: true

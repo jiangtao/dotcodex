@@ -1,0 +1,13 @@
+{
+  "status": "running",
+  "retryCount": 0,
+  "maxRetries": 8,
+  "workdir": "/Users/jt/places/personal/dotcodex",
+  "promptFile": "/Users/jt/places/personal/dotcodex/examples/prompt.md",
+  "remainingTasks": [
+    "001-bootstrap-codex-loop",
+    "002-run-bdd-and-repair"
+  ],
+  "failedScenarios": []
+}
+

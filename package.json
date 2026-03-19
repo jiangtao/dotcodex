@@ -1,0 +1,11 @@
+{
+  "name": "jerret/dotcodex",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Codex-native workflow and skill repository",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs tests/**/*.test.mjs",
+    "sync:superpowers": "sh scripts/sync-superpowers-from-dotclaude.sh"
+  }
+}
