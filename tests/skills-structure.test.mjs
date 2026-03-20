@@ -2,12 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 
-const requiredSkills = [
-  'agent-team-driven-development',
-  'behavior-driven-development',
-  'executing-plans',
-  'systematic-debugging',
-]
+const manifestPath = new URL('../release/skills.json', import.meta.url)
+const releaseManifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+const requiredSkills = releaseManifest.skills
 
 for (const skill of requiredSkills) {
   test(`${skill} has a SKILL.md with required frontmatter`, () => {
@@ -18,5 +15,9 @@ for (const skill of requiredSkills) {
     assert.match(content, /\nname:\s*.+/)
     assert.match(content, /\ndescription:\s*.+/)
   })
-}
 
+  test(`${skill} is published in the public skills layer`, () => {
+    const path = new URL(`../skills/${skill}/skill.md`, import.meta.url)
+    assert.equal(existsSync(path), true)
+  })
+}

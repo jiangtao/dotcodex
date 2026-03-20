@@ -1,78 +1,101 @@
 # dotcodex
 
-Codex-native workflow repository for Jerret's team.
+`dotcodex` is the source-of-truth repository for Codex workflows and a stable public skill distribution for end users.
 
-This repository is the source-of-truth for Codex-specific adaptations. It does not use Claude's plugin manifest format. Instead, it follows Codex's skill layout and repository scanning rules.
+It has two responsibilities:
 
-## Codex Skill Spec
+- Maintain repo-local Codex workflow source code under `.agents/skills/`
+- Publish a stable whitelist of installable skills into `~/.codex/skills`
 
-Based on the official Codex skills documentation:
-
-- Codex skills live in directories with a `SKILL.md` file
-- Repository-scoped skills should live under `.agents/skills/`
-- A skill directory can also include `scripts/`, `references/`, `assets/`, and optional `agents/openai.yaml`
-- Codex scans `.agents/skills` from the current directory up to the repo root
-
-## Repository Layout
+## Repository Model
 
 ```text
 dotcodex/
-├── .agents/
-│   └── skills/
-│       ├── agent-team-driven-development/
-│       ├── behavior-driven-development/
-│       ├── executing-plans/
-│       └── systematic-debugging/
-├── examples/
-│   ├── prompt.md
-│   └── state.json
-├── scripts/
-│   ├── start-superpower-loop.sh
-│   ├── superpower-watchdog.mjs
-│   └── sync-superpowers-from-dotclaude.sh
-├── vendor/
-│   └── superpowers/
-└── tests/
+├── .agents/skills/        # Source-of-truth workflow skills for repo-local Codex use
+├── skills/                # Stable published skill layer for external users
+├── release/skills.json    # Stable whitelist manifest
+├── scripts/               # Install, release, and runtime tooling
+├── examples/              # Example loop state and prompt files
+└── tests/                 # Contract and runtime tests
 ```
 
-## Source of Truth
+`.agents/skills/` is the development layer. `skills/` is the user-facing release layer. The stable whitelist is explicit so the published set preserves the full superpower loop while experimental workflows can remain local.
 
-- Claude-side upstream and fork maintenance happen in `/Users/jt/places/personal/dotclaude`
-- Codex-side adaptation happens here in `dotcodex`
-- `vendor/superpowers/` is a synced reference snapshot from `dotclaude/superpowers`
-- `.agents/skills/` contains Codex-native adaptations that can diverge where runtime behavior differs
+## Stable Skills
 
-## Installation
-
-For repository-local use, launch Codex from this repo root so `.agents/skills` is auto-discovered.
-
-For user-global use, you can symlink individual skills into `~/.codex/skills`, but this repository is optimized for repo-scoped skill discovery first.
-
-## Runtime Model
-
-This repository has two Codex-facing layers:
-
-- `vendor/superpowers/` tracks the Claude-side upstream and fork content from `dotclaude`
-- `.agents/skills/` holds Codex-native adaptations for runtime behavior
-
-The current Codex-native focus is:
+The current stable public distribution is defined in `release/skills.json`:
 
 - `agent-team-driven-development`
-- `executing-plans`
 - `behavior-driven-development`
+- `brainstorming`
+- `build-like-iphone-team`
+- `executing-plans`
 - `systematic-debugging`
+- `worktree-delivery`
+- `writing-plans`
 
-## Watchdog
+Together they restore the intended closed-loop workflow:
 
-`scripts/superpower-watchdog.mjs` is the first Codex runtime primitive. It:
+`brainstorming -> writing-plans -> executing-plans -> behavior-driven-development / agent-team-driven-development -> verification`
 
-- reads a loop state file
-- decides whether the run should continue, pause, stop, or fail terminally
-- launches `codex exec --full-auto` when continuation is allowed
+`worktree-delivery` complements that loop at handoff time by making branch-sync and merge readiness safer in multi-worktree repos.
 
-## Quick Start
+## Repo-Local Use
 
-From the repository root:
+Launch Codex from this repository root to let Codex auto-discover `.agents/skills/`.
+
+```bash
+cd /path/to/dotcodex
+codex
+```
+
+This is the recommended mode when developing or validating workflows inside this repository.
+
+## Public Installation
+
+### Option 1: `install.sh`
+
+Clone the repository, then install the stable whitelist into `~/.codex/skills`:
+
+```bash
+git clone <your-dotcodex-repo-url>
+cd dotcodex
+./install.sh
+```
+
+Use `--target` to install into a different Codex profile directory:
+
+```bash
+./install.sh --target /tmp/custom-codex/skills
+```
+
+### Option 2: `pnpx skills add`
+
+The public `skills/` directory is also shaped to match the `jiangtao-skills` convention, so Agentskills-style installation can pull it directly:
+
+```bash
+pnpx skills add <owner>/dotcodex
+```
+
+## Maintainer Workflow
+
+Refresh the public `skills/` layer from `.agents/skills/`:
+
+```bash
+npm run build:skills
+```
+
+Verify the release contract and runtime tooling:
+
+```bash
+npm test
+```
+
+## Runtime Tooling
+
+`scripts/superpower-watchdog.mjs` is the first Codex runtime primitive in this repository. It reads a loop state file, decides whether execution should continue, and launches `codex exec --full-auto` when continuation is allowed.
+
+Example:
 
 ```bash
 sh scripts/start-superpower-loop.sh \
@@ -80,30 +103,8 @@ sh scripts/start-superpower-loop.sh \
   examples/prompt.md
 ```
 
-The watchdog will launch:
-
-```bash
-codex exec --full-auto --cd <workdir> --add-dir "$HOME/.codex" "<prompt>"
-```
-
-## Sync Workflow
-
-Use:
-
-```bash
-pnpm run sync:superpowers
-```
-
-to refresh the `vendor/superpowers/` snapshot from `dotclaude/superpowers`.
-
 ## Attribution
 
-**Original author**
+Original workflow inspiration: Frad LEE (`superpowers`) and the Claude-side fork maintained in `jiangtao/dotclaude`.
 
-Frad LEE (fradser@gmail.com)
-
-The Codex adaptation in this repository is built on top of Frad LEE's original `superpowers` workflow and the Claude-side fork maintained in `jiangtao/dotclaude`.
-
-**Codex adaptation and customization**
-
-Jerret (321jiangtao@gmail.com)
+Codex adaptation and distribution model: Jerret.
